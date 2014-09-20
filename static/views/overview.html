@@ -86,6 +86,7 @@
               <h5>URL: {{log.url}}</h5>
               <p>Message: {{log.msg}}</p>
               <p>IP-Address: <code>{{log.ip}}</code></p>
+              <p ng-if="log.user">User: {{log.user}}</p>
               <p>Date: {{log.date | date:"HHmm'hrs', MMM d yyyy Z"}}</p>
               <p>User-Agent: <code>{{log.ua}}</code></p>
               <p>Accept-Language: <code>{{log.lang}}</code></p>
