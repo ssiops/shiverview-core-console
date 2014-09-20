@@ -1,0 +1,102 @@
+<div class="container top-spaced">
+  <div class="row">
+    <div class="col-md-6">
+      <div class="card">
+        <h3 class="cover cover-info">STATUS
+          <button class="btn btn-info btn-xs" ng-click="updateStatus()"><span class="glyphicon glyphicon-refresh"></span></button>
+        </h3>
+        <div class="card-content row">
+          <div class="col-sm-6">
+            <h4>SYSTEM</h4>
+            <p>{{status.system}}</p>
+            <h4>MEMORY USAGE</h4>
+            <p>
+              Resident set size: {{status.memory.rss}} Bytes<br>
+              Heap total: {{status.memory.heapTotal}} Bytes<br>
+              Heap used: {{status.memory.heapUsed}} Bytes<br>
+            </p>
+            <h4>BUILD DATE</h4>
+            <p>{{status.buildDate | date: "HHmm'hrs', MMM d yyyy Z"}}</p>
+          </div>
+          <div class="col-sm-6">
+            <h4>VERSIONS</h4>
+            <p>
+              HTTP parser: {{status.versions.http_parser}}<br>
+              Node: {{status.versions.node}}<br>
+              V8: {{status.versions.v8}}<br>
+              ARES: {{status.versions.ares}}<br>
+              UV: {{status.versions.uv}}<br>
+              ZLib: {{status.versions.zlib}}<br>
+              Modules: {{status.versions.modules}}<br>
+              OpenSSL: {{status.versions.openssl}}<br>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="card" ng-controller="consoleModulesCtrl">
+        <h3 class="cover cover-success">MODULES
+          <button class="btn btn-success btn-xs" ng-click="updateModules()"><span class="glyphicon glyphicon-refresh"></span></button>
+        </h3>
+        <form class="card-content" ng-submit="loadModule($event)">
+          <div class="console-module" ng-repeat="module in modules">
+            <h4>{{module.name}}</h4>
+            <p>{{module.desc}}</p>
+            <p>
+              <button class="btn btn-info btn-sm" type="button" ng-click="updateModule('{{module.name}}')">Update</button>
+              <button class="btn btn-danger btn-sm" type="button" ng-click="unloadModule('{{module.name}}')">Unload</button>
+            </p>
+          </div>
+          <div class="form-group input-group">
+            <input type="text" class="form-control" placeholder="Name[:Reference]" ng-model="newModuleName" required>
+            <span class="input-group-btn">
+              <button class="btn btn-success" type="submit">Load</button>
+            </span>
+          </div>
+        </form>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card" ng-controller="consoleUsersCtrl">
+        <h3 class="cover cover-primary">USER ACCOUNTS
+          <button class="btn btn-primary btn-xs" ng-click="updateUsers()"><span class="glyphicon glyphicon-refresh"></span></button>
+        </h3>
+        <div class="card-content">
+          <div class="console-user" ng-repeat="user in users">
+            <h4>{{user.name}}<span ng-if="user.displayName"> aka "{{user.displayName}}"</span></h4>
+            <p>{{user.email}}</p>
+            <p>
+              <button class="btn btn-warning btn-sm" type="button" ng-if="!user.admin" ng-click="setAdmin(user.name)">Set administrator</button>
+              <button class="btn btn-warning btn-sm" type="button" ng-if="user.admin" ng-click="revokeAdmin(user.name)">Revoke administrator</button>
+              <button class="btn btn-danger btn-sm" type="button" ng-click="removeUser(user.name)">Remove user</button>
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="card" ng-controller="consoleLogsCtrl">
+        <h3 class="cover cover-warning">LOGS</h3>
+        <div class="card-content">
+          <form class="form-group input-group" ng-submit="updateLogs($event)">
+            <input type="text" class="form-control" placeholder="[TAG][:limit]" ng-model="queryInput">
+            <span class="input-group-btn">
+              <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
+            </span>
+          </form>
+          <accordion>
+            <accordion-group class="console-log" heading="{{log.tag}}" ng-repeat="log in logs">
+              <h5>URL: {{log.url}}</h5>
+              <p>Message: {{log.msg}}</p>
+              <p>IP-Address: <code>{{log.ip}}</code></p>
+              <p>Date: {{log.date | date:"HHmm'hrs', MMM d yyyy Z"}}</p>
+              <p>User-Agent: <code>{{log.ua}}</code></p>
+              <p>Accept-Language: <code>{{log.lang}}</code></p>
+              <p>Cooies:</p>
+              <pre>
+{{log.cookie}}
+              </pre>
+            </accordion-group>
+          </accordion>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

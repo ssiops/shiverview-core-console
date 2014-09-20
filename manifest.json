@@ -1,0 +1,26 @@
+{
+  "name": "shiverview-core-console",
+  "desc": "Administrative console module for Project Shiverview.",
+  "path": "/console",
+  "static": "static",
+  "ui": {
+    "icon": "favicon.png",
+    "navName": "Console",
+    "drawerName": "Console",
+    "index": 99,
+    "views": {
+      "/": {"scope": "admin", "title": "Overview", "url": "/views/overview.html", "ctrl": "consoleOverviewCtrl"}
+    },
+    "scripts": ["js/controllers.js"]
+  },
+  "privileges": {
+    "database": "shiverview",
+    "manager": true,
+    "log": true,
+    "err": true
+  },
+  "dependencies": {
+    "shiverview-core-ui": "*",
+    "shiverview-core-users": "*"
+  }
+}
