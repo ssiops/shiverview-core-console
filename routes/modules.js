@@ -1,4 +1,5 @@
 var async = require('async');
+var cluster = require('cluster');
 var exec = require('child_process').exec;
 var fse = require('fs.extra');
 
@@ -30,13 +31,14 @@ module.exports = [
       if (typeof req.params.name === 'undefined')
         return res.status(400).send(new srv.err('Please specify a name.'));
       if (req.body.ref) {
-        var command = 'npm install ';
+        var command = 'npm install --save';
         if (/^[a-zA-Z0-9]+\/.*/.test(req.body.ref))
           command += req.body.ref;
         else
           command += req.params.name + '@' + req.body.ref;
         exec(command, function (err) {
           if (err) return next(err);
+          if (cluster.isWorker) process.send({load: req.params.name});
           srv.manager.load(req.params.name, function (err) {
             if (err) return next(err);
             var log = new srv.log(req, req.session.user.name + ' loaded module ' + req.params.name, 'MODULE_LOADED');
@@ -45,6 +47,7 @@ module.exports = [
           });
         });
       } else {
+        if (cluster.isWorker) process.send({load: req.params.name});
         srv.manager.load(req.params.name, function (err) {
           if (err) return next(err);
           res.send();
@@ -67,6 +70,7 @@ module.exports = [
       if (req.body.action === 'update') {
         async.series([
           function (callback) {
+            if (cluster.isWorker) process.send({unload: req.params.name});
             srv.manager.unload(req.params.name, function (err) {
               callback(err);
             });
@@ -77,11 +81,15 @@ module.exports = [
             });
           },
           function (callback) {
-            exec('npm install', function (err) {
+            var pkgName = req.params.name;
+            if (/^[a-zA-Z0-9]+\/.*/.test(srv.manager.pkg.dependencies[pkgName]))
+              pkgName = srv.manager.pkg.dependencies[pkgName];
+            exec('npm install ' + pkgName, function (err) {
               callback(err);
             });
           },
           function (callback) {
+            if (cluster.isWorker) process.send({load: req.params.name});
             srv.manager.load(req.params.name, function (err) {
               callback(err);
             });
@@ -105,6 +113,7 @@ module.exports = [
         return res.status(401).send(new srv.err('Sudo required.'));
       if (typeof req.params.name === 'undefined')
         return res.status(400).send(new srv.err('Please specify a name.'));
+      if (cluster.isWorker) process.send({unload: req.params.name});
       srv.manager.unload(req.params.name, function (err) {
         if (err) return next(err);
         var log = new srv.log(req, req.session.user.name + ' unloaded module ' + req.params.name, 'MODULE_UNLOADED');

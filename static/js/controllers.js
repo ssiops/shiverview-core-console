@@ -76,7 +76,7 @@ angular.module('shiverview')
   };
   $scope.updateUsers();
 }])
-.controller('consoleModulesCtrl', ['$scope', '$http', '$rootScope', function ($scope, $http, $rootScope) {
+.controller('consoleModulesCtrl', ['$scope', '$http', '$rootScope', 'user', function ($scope, $http, $rootScope, user) {
   var successHandler = function () {
     $rootScope.$broadcast('successMessage', 'Changes applied successfully.');
     $scope.updateModules();
