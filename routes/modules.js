@@ -1,7 +1,6 @@
 var async = require('async');
 var cluster = require('cluster');
 var exec = require('child_process').exec;
-var fse = require('fs.extra');
 
 module.exports = [
   {
@@ -30,29 +29,23 @@ module.exports = [
         return res.status(401).send(new srv.err('Sudo required.'));
       if (typeof req.params.name === 'undefined')
         return res.status(400).send(new srv.err('Please specify a name.'));
+      var pkgName = req.params.name;
       if (req.body.ref) {
-        var command = 'npm install --save';
         if (/^[a-zA-Z0-9]+\/.*/.test(req.body.ref))
-          command += req.body.ref;
+          pkgName = req.body.ref;
         else
-          command += req.params.name + '@' + req.body.ref;
-        exec(command, function (err) {
-          if (err) return next(err);
-          if (cluster.isWorker) process.send({load: req.params.name});
-          srv.manager.load(req.params.name, function (err) {
-            if (err) return next(err);
-            var log = new srv.log(req, req.session.user.name + ' loaded module ' + req.params.name, 'MODULE_LOADED');
-            log.store();
-            res.send();
-          });
-        });
-      } else {
+          pkgName = req.params.name + '@' + req.body.ref;
+      }
+      exec('npm install --save ' + pkgName, function (err) {
+        if (err) return next(err);
         if (cluster.isWorker) process.send({load: req.params.name});
         srv.manager.load(req.params.name, function (err) {
           if (err) return next(err);
+          var log = new srv.log(req, req.session.user.name + ' loaded module ' + req.params.name, 'MODULE_LOADED');
+          log.store();
           res.send();
         });
-      }
+      });
     }
   },
   {
@@ -76,15 +69,7 @@ module.exports = [
             });
           },
           function (callback) {
-            fse.rmrf(process.cwd() + '/node_modules/' + req.params.name, function (err) {
-              callback(err);
-            });
-          },
-          function (callback) {
-            var pkgName = req.params.name;
-            if (/^[a-zA-Z0-9]+\/.*/.test(srv.manager.pkg.dependencies[pkgName]))
-              pkgName = srv.manager.pkg.dependencies[pkgName];
-            exec('npm install ' + pkgName, function (err) {
+            exec('npm update ' + req.params.name, function (err) {
               callback(err);
             });
           },
@@ -116,9 +101,12 @@ module.exports = [
       if (cluster.isWorker) process.send({unload: req.params.name});
       srv.manager.unload(req.params.name, function (err) {
         if (err) return next(err);
-        var log = new srv.log(req, req.session.user.name + ' unloaded module ' + req.params.name, 'MODULE_UNLOADED');
-        log.store();
-        res.send();
+        exec('npm uninstall --save ' + req.params.name, function (err) {
+          if (err) return next(err);
+          var log = new srv.log(req, req.session.user.name + ' unloaded module ' + req.params.name, 'MODULE_UNLOADED');
+          log.store();
+          res.send();
+        });
       });
     }
   }
