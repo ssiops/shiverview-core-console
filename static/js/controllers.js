@@ -15,6 +15,7 @@ angular.module('shiverview')
   else if ($scope.user.admin !== true)
     $location.path('/users/profile');
   $scope.updateStatus = function () {
+    $scope.statusLoaded = false;
     $http({
       url: '/console/status',
       method: 'get'
@@ -22,6 +23,7 @@ angular.module('shiverview')
     .success(function (status) {
       status.buildDate = new Date(new Date().getTime() - status.uptime * 1000);
       $scope.status = status;
+      $scope.statusLoaded = true;
     })
     .error(function (err) {
       $rootScope.$broadcast('errorMessage', err.message);
@@ -37,6 +39,7 @@ angular.module('shiverview')
   var errorHandler = function (err) {
     if (err.message === 'Sudo required.') return user.sudo();
     $rootScope.$broadcast('errorMessage', err.message);
+    $scope.usersLoaded = true;
   };
   $scope.setAdmin = function (name) {
     $http({
@@ -45,6 +48,8 @@ angular.module('shiverview')
     })
     .success(successHandler)
     .error(errorHandler);
+    $scope.usersLoaded = false;
+    $scope.message = 'Saving changes...';
   };
   $scope.revokeAdmin = function (name) {
     $http({
@@ -53,6 +58,8 @@ angular.module('shiverview')
     })
     .success(successHandler)
     .error(errorHandler);
+    $scope.usersLoaded = false;
+    $scope.message = 'Saving changes...';
   };
   $scope.removeUser = function (name) {
     $http({
@@ -61,17 +68,22 @@ angular.module('shiverview')
     })
     .success(successHandler)
     .error(errorHandler);
+    $scope.usersLoaded = false;
+    $scope.message = 'Saving changes...';
   };
   $scope.updateUsers = function () {
+    $scope.usersLoaded = false;
     $http({
       url: '/console/users',
       method: 'get'
     })
     .success(function (users) {
       $scope.users = users;
+      $scope.usersLoaded = true;
     })
     .error(function (err) {
       $rootScope.$broadcast('errorMessage', err.message);
+      $scope.usersLoaded = true;
     });
   };
   $scope.updateUsers();
@@ -84,6 +96,7 @@ angular.module('shiverview')
   var errorHandler = function (err) {
     if (err.message === 'Sudo required.') return user.sudo();
     $rootScope.$broadcast('errorMessage', err.message);
+    $scope.modulesLoaded = true;
   };
   $scope.loadModule = function (e) {
     if (e) e.preventDefault();
@@ -99,6 +112,8 @@ angular.module('shiverview')
     })
     .success(successHandler)
     .error(errorHandler);
+    $scope.modulesLoaded = false;
+    $scope.message = 'Applying changes...';
   };
   $scope.updateModule = function (name) {
     $http({
@@ -108,6 +123,8 @@ angular.module('shiverview')
     })
     .success(successHandler)
     .error(errorHandler);
+    $scope.modulesLoaded = false;
+    $scope.message = 'Applying changes...';
   };
   $scope.unloadModule = function (name) {
     $http({
@@ -116,17 +133,22 @@ angular.module('shiverview')
     })
     .success(successHandler)
     .error(errorHandler);
+    $scope.modulesLoaded = false;
+    $scope.message = 'Applying changes...';
   };
   $scope.updateModules = function () {
+    $scope.modulesLoaded = false;
     $http({
       url: '/console/modules',
       method: 'get'
     })
     .success(function (modules) {
       $scope.modules = modules;
+      $scope.modulesLoaded = true;
     })
     .error(function (err) {
       $rootScope.$broadcast('errorMessage', err.message);
+      $scope.modulesLoaded = true;
     });
   };
   $scope.updateModules();
@@ -134,6 +156,7 @@ angular.module('shiverview')
 .controller('consoleLogsCtrl', ['$scope', '$http', '$rootScope', function ($scope, $http, $rootScope) {
   $scope.updateLogs = function (e) {
     if (e) e.preventDefault();
+    $scope.logsLoaded = false;
     var query = {};
     if (typeof $scope.queryInput === 'string') {
       var payload = $scope.queryInput.split(':');
@@ -149,10 +172,13 @@ angular.module('shiverview')
     })
     .success(function (logs) {
       $scope.logs = logs;
+      $scope.logsLoaded = true;
     })
     .error(function (err) {
       $rootScope.$broadcast('errorMessage', err.message);
+      $scope.logsLoaded = true;
     });
+    $scope.logsLoaded = false;
   };
   $scope.updateLogs();
 }]);
