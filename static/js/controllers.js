@@ -154,16 +154,59 @@ angular.module('shiverview')
   $scope.updateModules();
 }])
 .controller('consoleLogsCtrl', ['$scope', '$http', '$rootScope', function ($scope, $http, $rootScope) {
+  var getTime = function (str) {
+    if (typeof str !== 'string' || str.length < 1)
+      return 0;
+    var relativePatt = /-([0-9]+[YMdhms])+/;
+    if (relativePatt.test(str)) {
+      var now = new Date().getTime();
+      var matches = str.match(/[0-9]+[YMdhms]/g);
+      for (var i = 0; i < matches.length; i++) {
+        var unit = matches[i].charAt(matches[i].length - 1);
+        var value = matches[i].substr(0, matches[i].length - 1);
+        switch (unit) {
+          case 'Y':
+            now -= value * 365 * 24 * 60 * 60 * 1000;
+            break;
+          case 'M':
+            now -= value * 30 * 24 * 60 * 60 * 1000;
+            break;
+          case 'd':
+            now -= value * 24 * 60 * 60 * 1000;
+            break;
+          case 'h':
+            now -= value * 60 * 60 * 1000;
+            break;
+          case 'm':
+            now -= value * 60 * 1000;
+            break;
+          case 's':
+            now -= value * 1000;
+        }
+      }
+      return now;
+    } else
+      return new Date(str).getTime();
+  };
   $scope.updateLogs = function (e) {
     if (e) e.preventDefault();
     $scope.logsLoaded = false;
     var query = {};
     if (typeof $scope.queryInput === 'string') {
-      var payload = $scope.queryInput.split(':');
-      if (payload[0].length > 0)
-        query.t = payload[0];
-      if (payload.length > 1)
-        query.l = payload[1];
+      var tag = /^[a-zA-Z0-9_.\-]+/.exec($scope.queryInput);
+      var limit = /#[0-9]+/.exec($scope.queryInput);
+      var range = /@-?[0-9YMdhms :\/]*~-?[0-9YMdhms :\/]*/.exec($scope.queryInput);
+      if (tag)
+        query.t = tag[0];
+      if (limit)
+        query.l = limit[0].substring(1);
+      if (range) {
+        range = range[0].substring(1).split('~');
+        if (range[0].length > 0)
+          query.start = getTime(range[0]);
+        if (range[1].length > 0)
+          query.end = getTime(range[1]);
+      }
     }
     $http({
       url: '/console/logs',
@@ -178,7 +221,20 @@ angular.module('shiverview')
       $rootScope.$broadcast('errorMessage', err.message);
       $scope.logsLoaded = true;
     });
+    $http({
+      url: '/console/logs/tags',
+      method: 'get'
+    })
+    .success(function (tags) {
+      $scope.logTags = tags.sort();
+    });
     $scope.logsLoaded = false;
+  };
+  $scope.prependQuery = function (str) {
+    if (typeof $scope.queryInput === 'undefined')
+      $scope.queryInput = str;
+    else
+      $scope.queryInput = $scope.queryInput.replace(/^[a-zA-Z0-9_.\-]*/, str);
   };
   $scope.updateLogs();
 }]);

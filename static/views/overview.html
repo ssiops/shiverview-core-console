@@ -1,16 +1,16 @@
 <div class="container top-spaced">
   <div class="row">
-    <div class="col-md-6">
+    <div class="col-sm-4">
       <div class="card">
         <h3 class="cover cover-info">STATUS
           <button class="btn btn-info btn-xs" ng-click="updateStatus()"><span class="glyphicon glyphicon-refresh"></span></button>
         </h3>
-        <div class="card-content" ng-hide="statusLoaded">
+        <div class="card-content center-aligned" ng-hide="statusLoaded">
           <div class="loading-spinner"></div>
           <h4>Loading data...</h4>
         </div>
         <div class="card-content row" ng-show="statusLoaded">
-          <div class="col-sm-6">
+          <div class="col-xs-6 col-sm-12">
             <h4>SYSTEM</h4>
             <p>{{status.system}}</p>
             <h4>MEMORY USAGE</h4>
@@ -22,7 +22,7 @@
             <h4>BUILD DATE</h4>
             <p>{{status.buildDate | date: "HHmm'hrs', MMM d yyyy Z"}}</p>
           </div>
-          <div class="col-sm-6">
+          <div class="col-xs-6 col-sm-12">
             <h4>VERSIONS</h4>
             <p>
               HTTP parser: {{status.versions.http_parser}}<br>
@@ -41,7 +41,7 @@
         <h3 class="cover cover-success">MODULES
           <button class="btn btn-success btn-xs" ng-click="updateModules()"><span class="glyphicon glyphicon-refresh"></span></button>
         </h3>
-        <div class="card-content" ng-hide="modulesLoaded">
+        <div class="card-content center-aligned" ng-hide="modulesLoaded">
           <div class="loading-spinner"></div>
           <h4>{{message || 'Loading data...'}}</h4>
         </div>
@@ -63,12 +63,12 @@
         </form>
       </div>
     </div>
-    <div class="col-md-6">
+    <div class="col-sm-8">
       <div class="card" ng-controller="consoleUsersCtrl">
         <h3 class="cover cover-primary">USER ACCOUNTS
           <button class="btn btn-primary btn-xs" ng-click="updateUsers()"><span class="glyphicon glyphicon-refresh"></span></button>
         </h3>
-        <div class="card-content" ng-hide="usersLoaded">
+        <div class="card-content center-aligned" ng-hide="usersLoaded">
           <div class="loading-spinner"></div>
           <h4>{{message || 'Loading data...'}}</h4>
         </div>
@@ -88,15 +88,19 @@
         <h3 class="cover cover-warning">LOGS</h3>
         <div class="card-content">
           <form class="form-group input-group" ng-submit="updateLogs($event)">
-            <input type="text" class="form-control" placeholder="[TAG][:limit]" ng-model="queryInput">
-            <span class="input-group-btn">
+            <input type="text" class="form-control" placeholder="[TAG][#limit][@[start]~[end]]" ng-model="queryInput">
+            <span class="input-group-btn" dropdown>
+              <button class="btn btn-default dropdown-toggle" type="button" data-toggle="dropdown" ng-if="logTags"><span class="caret"></span></button>
+              <ul class="dropdown-menu dropdown-menu-right" role="menu">
+                <li ng-repeat="tag in logTags"><a href ng-click="prependQuery('{{tag}}')">{{tag}}</a></li>
+              </ul>
               <button class="btn btn-default" type="submit"><span class="glyphicon glyphicon-search"></span></button>
             </span>
           </form>
         </div>
-        <div class="card-content" ng-hide="logsLoaded">
+        <div class="card-content center-aligned" ng-hide="logsLoaded">
           <div class="loading-spinner"></div>
-          <h4>{{'Loading data...'}}</h4>
+          <h4>Loading Data...</h4>
         </div>
         <div class="card-content" ng-show="logsLoaded">
           <accordion>
