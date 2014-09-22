@@ -69,7 +69,7 @@ module.exports = [
             });
           },
           function (callback) {
-            exec('npm update ' + req.params.name, function (err) {
+            exec('npm install --force ' + req.params.name, function (err) {
               callback(err);
             });
           },
